@@ -114,6 +114,12 @@ class Scanner:
             detection.x, detection.y
         )
 
+        # Apply global click offsets from config (useful for DPI / scaling corrections)
+        if getattr(self.config, "click_x_offset", 0):
+            mon_x += int(self.config.click_x_offset)
+        if getattr(self.config, "click_y_offset", 0):
+            mon_y += int(self.config.click_y_offset)
+
         self.click_controller.click(mon_x, mon_y)
         self.status.clicks_count += 1
         self.status.detections.append(detection)

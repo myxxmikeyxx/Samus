@@ -34,7 +34,12 @@ class BoundingBox(BaseModel):
         return self.y2 - self.y1
 
     def pad(self, factor: float) -> "BoundingBox":
-        """Pad bbox by factor (0.0-1.0)."""
+        """Pad bbox by factor (0.0-1.0).
+
+        Positive `factor` will shrink the box by `factor * width/height` on
+        each side (used by caller to reduce search area). Negative values can
+        be used to expand the box.
+        """
         w_pad = int(self.width * factor)
         h_pad = int(self.height * factor)
         return BoundingBox(

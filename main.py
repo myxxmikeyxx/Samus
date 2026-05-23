@@ -62,6 +62,18 @@ logger = get_logger(__name__)
     help="Delay between scan iterations in seconds (default: 2.0)",
 )
 @click.option(
+    "--click-y-offset",
+    type=int,
+    default=0,
+    help="Vertical offset (pixels) to apply to auto-clicks (positive moves down)",
+)
+@click.option(
+    "--click-x-offset",
+    type=int,
+    default=0,
+    help="Horizontal offset (pixels) to apply to auto-clicks (positive moves right)",
+)
+@click.option(
     "--simulate",
     is_flag=True,
     default=False,
@@ -83,6 +95,8 @@ def main(
     min_matches: int,
     ratio: float,
     click_delay: float,
+    click_y_offset: int,
+    click_x_offset: int,
     simulate: bool,
     debug_frame_dir: Optional[str],
 ) -> None:
@@ -119,6 +133,8 @@ def main(
         min_matches=min_matches,
         ratio_threshold=ratio,
         click_delay=click_delay,
+        click_y_offset=click_y_offset,
+        click_x_offset=click_x_offset,
     )
 
     logger.debug(f"Configuration: {config}")

@@ -169,7 +169,12 @@ class ButtonDetector:
         if img is None or desc is None:
             return None
         height, width = img.shape[:2]
-        return TemplateCandidate(desc=desc, width=int(width), height=int(height))
+        # Compute template keypoints to allow homography-based center mapping
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        kps = self.sift.detect(gray, mask=None)
+        return TemplateCandidate(
+            desc=desc, width=int(width), height=int(height), kps=kps
+        )
 
     def _match_template(
         self,
@@ -198,10 +203,27 @@ class ButtonDetector:
             )
             return None
 
-        pts: npt.NDArray[np.float32] = np.float32(
-            [kps[m.trainIdx].pt for m in good_matches]
-        )
-        cx, cy = np.mean(pts, axis=0)
+        # Try to compute a homography from template -> image and map the
+        # template center to image coordinates for a more accurate click point.
+        cx = cy = None
+        try:
+            if template.kps is not None and len(template.kps) > 3:
+                src_pts = np.float32([template.kps[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+                dst_pts = np.float32([kps[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+                H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+                if H is not None:
+                    tpl_cx = template.width / 2.0
+                    tpl_cy = template.height / 2.0
+                    mapped = cv2.perspectiveTransform(np.array([[[tpl_cx, tpl_cy]]], dtype=np.float32), H)
+                    cx, cy = float(mapped[0][0][0]), float(mapped[0][0][1])
+        except Exception:
+            cx = cy = None
+
+        if cx is None or cy is None:
+            pts: npt.NDArray[np.float32] = np.float32(
+                [kps[m.trainIdx].pt for m in good_matches]
+            )
+            cx, cy = np.mean(pts, axis=0)
         cx += offset_x
         cy += offset_y
         confidence = min(len(good_matches) / (min_matches * 2), 1.0)

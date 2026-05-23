@@ -24,3 +24,7 @@ class AppConfig(BaseModel):
     click_delay: float = Field(default=2.0, ge=0.1)
     retry_delay: float = Field(default=1.0, ge=0.1)
     wabbajack_retry_limit: int = Field(default=5, ge=1)
+    # Manual Y offset to apply to all automatic clicks (useful for DPI/scaling fixes)
+    click_y_offset: int = Field(default=0)
+    # Manual X offset to apply to all automatic clicks (useful for DPI/scaling fixes)
+    click_x_offset: int = Field(default=0)

@@ -8,7 +8,6 @@ from loguru import logger
 import random
 import time
 from typing import Callable, Optional
-
 from models import (
     AppConfig,
     ScanStatus,
@@ -113,8 +112,9 @@ class SimulatedScanner:
                     detection = self._simulate_detection(button)
                     self.status.detections.append(detection)
                     self.status.clicks_count += 1
+                
                     self.status.current_action = f"Clicked {button.value} button at ({detection.x}, {detection.y})"
-
+                    
                     logger.info(f"[SIM] Detected and clicked {button.value}")
                     self._update_status()
 
